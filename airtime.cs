@@ -9,12 +9,12 @@ namespace Airtime
     public class Airtime : BasePlugin
     {
         public override string ModuleName => "Airtime";
-        public override string ModuleVersion => "1.0.0";
+        public override string ModuleVersion => "1.0.1";
         public override string ModuleAuthor => "MLGSW4G (https://github.com/MLGSW4G/)";
         public override string ModuleDescription => "Displays the time smoke grenades travel before detonating.";
 
         
-        public static bool isEnabled = true;
+        private static bool isEnabled = true;
         private double smokeThrownTime;
         private double smokeDetonateTime;
 
@@ -22,7 +22,7 @@ namespace Airtime
         [GameEventHandler]
         public HookResult OnSmokeThrown(EventGrenadeThrown @event, GameEventInfo info)
         {
-            if (@event.Userid.IsValid && isEnabled)
+            if (@event.Userid.IsValid && isEnabled && @event.Weapon == "smokegrenade")
             {
                 smokeThrownTime = NativeAPI.GetEngineTime();
             }
