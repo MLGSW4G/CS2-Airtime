@@ -9,14 +9,14 @@ namespace Airtime
     public class Airtime : BasePlugin
     {
         public override string ModuleName => "Airtime";
-        public override string ModuleVersion => "1.0.1";
+        public override string ModuleVersion => "1.0.2";
         public override string ModuleAuthor => "MLGSW4G (https://github.com/MLGSW4G/)";
         public override string ModuleDescription => "Displays the time smoke grenades travel before detonating.";
 
-        
+
         private static bool isEnabled = true;
-        private double smokeThrownTime;
-        private double smokeDetonateTime;
+        readonly List<double> smokeThrownTimes = new();
+        readonly List<double> smokeDetonateTimes = new();
 
 
         [GameEventHandler]
@@ -24,7 +24,7 @@ namespace Airtime
         {
             if (@event.Userid.IsValid && isEnabled && @event.Weapon == "smokegrenade")
             {
-                smokeThrownTime = NativeAPI.GetEngineTime();
+                smokeThrownTimes.Add(NativeAPI.GetEngineTime());
             }
 
             return HookResult.Continue;
@@ -35,9 +35,11 @@ namespace Airtime
         {
             if (@event.Userid.IsValid && isEnabled)
             {
-                smokeDetonateTime = NativeAPI.GetEngineTime();
-                double airtime = smokeDetonateTime - smokeThrownTime;
+                smokeDetonateTimes.Add(NativeAPI.GetEngineTime());
+                double airtime = smokeDetonateTimes[0] - smokeThrownTimes[0];
                 @event.Userid.PrintToChat($"[{ChatColors.Green}Airtime{ChatColors.Default}] Airtime of smoke grenade: {airtime:0.00} seconds");
+                smokeThrownTimes.Remove(smokeThrownTimes[0]);
+                smokeDetonateTimes.Remove(smokeDetonateTimes[0]);
             }
 
             return HookResult.Continue;
@@ -46,16 +48,8 @@ namespace Airtime
         [ConsoleCommand("css_airtime", "Enable/disable smoke grenades airtime display.")]
         public void OnCommand(CCSPlayerController? player, CommandInfo command)
         {
-            if (isEnabled)
-            {
-                Server.PrintToChatAll($"[{ChatColors.Green}Airtime{ChatColors.Default}] Smoke grenades airtime display disabled.");
-                isEnabled = false;
-            }
-            else
-            {
-                Server.PrintToChatAll($"[{ChatColors.Green}Airtime{ChatColors.Default}] Smoke grenades airtime display enabled.");
-                isEnabled = true;
-            }
+            isEnabled = !isEnabled;
+            Server.PrintToChatAll($"[{ChatColors.Green}Airtime{ChatColors.Default}] Smoke grenades airtime display " + (isEnabled ? "enabled." : "disabled."));
         }
     }
 }
